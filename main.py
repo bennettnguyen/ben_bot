@@ -1,22 +1,35 @@
-# This example requires the 'message_content' intent.
-
 import discord
+from discord.ext import commands
+import logging
+import requests
+import json
+
+with open('path_to_file/config.json', 'r') as f:
+    data = json.load(f)
+    token = data[0]
 
 intents = discord.Intents.default()
-intents.message_content = True
+intents.members = True
+intents.messages = True
+intents.presences = True
+bot = commands.Bot(command_prefix='!', intents=intents)
 
-client = discord.Client(intents=intents)
-
-@client.event
+@bot.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'⭐ Bot has logged in as {bot.user}')
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+@bot.event
+async def on_member_update(before, after):
+    if before.activity != after.activity:
+        channel = bot.get_channel(1008072678210539670)
+        await channel.send("Damnnnn")
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+@bot.command()
+async def ping(ctx):
+    await ctx.send('Pong!')
 
-client.run('your token here')
+@bot.slash_command()
+async def first_slash(ctx): 
+    await ctx.respond("You executed the slash command!")
+
+bot.run(token)
